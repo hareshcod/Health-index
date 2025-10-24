@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Score Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 16px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .scale-container {
+            margin: 25px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .scale-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .scale-bar {
+            height: 40px;
+            background: linear-gradient(to right, #ef4444 0%, #f59e0b 30%, #3b82f6 60%, #10b981 100%);
+            border-radius: 20px;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .scale-marker {
+            position: absolute;
+            top: -10px;
+            width: 4px;
+            height: 60px;
+            background: #1f2937;
+            border-radius: 2px;
+            transition: left 0.5s ease;
+        }
+
+        .scale-marker::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 10px solid #1f2937;
+        }
+
+        .scale-numbers {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .score-display {
+            font-size: 72px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 20px 0;
+        }
+
+        .score-label {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .health-status {
+            font-size: 22px;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .bmi-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .calculations {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .calc-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .calc-section {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .calc-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .calc-detail {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            margin: 3px 0;
+        }
+
+        .calc-formula {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+            font-size: 12px;
+            color: #495057;
+        }
+
+        .calc-result {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .feedback-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-radius: 12px;
+            border: 2px solid #667eea;
+        }
+
+        .feedback-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .feedback-content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .tips-list {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .tip-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .tip-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .tip-icon {
+            font-size: 18px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .tip-text {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .tip-category {
+            font-weight: 600;
+            color: #667eea;
+            margin-right: 5px;
+        }
+
+        .status-excellent { color: #10b981; }
+        .status-good { color: #3b82f6; }
+        .status-fair { color: #f59e0b; }
+        .status-poor { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Health Score Calculator</h1>
+        <p class="subtitle">Assess your overall health wellness</p>
+
+        <form id="healthForm">
+            <div class="input-group">
+                <label>Age (years)</label>
+                <input type="number" id="age" required min="1" max="120">
+            </div>
+
+            <div class="row">
+                <div class="input-group">
+                    <label>Weight (kg)</label>
+                    <input type="number" id="weight" required min="1" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Height (cm)</label>
+                    <input type="number" id="height" required min="1" step="0.1">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="input-group">
+                    <label>Resting Heart Rate (bpm)</label>
+                    <input type="number" id="heartRate" required min="30" max="200">
+                </div>
+                <div class="input-group">
+                    <label>Blood Pressure</label>
+                    <select id="bloodPressure" required>
+                        <option value="">Select...</option>
+                        <option value="5">Low (&lt;90/60)</option>
+                        <option value="10">Normal (90-120/60-80)</option>
+                        <option value="7">Elevated (120-129/&lt;80)</option>
+                        <option value="5">High Stage 1 (130-139/80-89)</option>
+                        <option value="3">High Stage 2 (≥140/≥90)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="input-group">
+                    <label>Sleep (hours/night)</label>
+                    <input type="number" id="sleep" required min="0" max="24" step="0.5">
+                </div>
+                <div class="input-group">
+                    <label>Exercise (days/week)</label>
+                    <input type="number" id="exercise" required min="0" max="7">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Smoking Status</label>
+                <select id="smoking" required>
+                    <option value="">Select...</option>
+                    <option value="10">Non-smoker</option>
+                    <option value="7">Former smoker (&gt;1 year)</option>
+                    <option value="4">Former smoker (&lt;1 year)</option>
+                    <option value="2">Current smoker</option>
+                </select>
+            </div>
+
+            <button type="submit">Calculate Health Score</button>
+        </form>
+
+        <div class="result" id="result">
+            <div class="score-label">Your Health Score</div>
+            <div class="score-display" id="scoreDisplay">0</div>
+            <div class="health-status" id="healthStatus"></div>
+            
+            <div class="scale-container">
+                <div class="scale-label">Health Score Scale (1-10)</div>
+                <div class="scale-bar">
+                    <div class="scale-marker" id="scaleMarker"></div>
+                </div>
+                <div class="scale-numbers">
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                    <span>5</span>
+                    <span>6</span>
+                    <span>7</span>
+                    <span>8</span>
+                    <span>9</span>
+                    <span>10</span>
+                </div>
+            </div>
+            
+            <div class="bmi-info" id="bmiInfo"></div>
+            
+            <div class="calculations" id="calculations">
+                <div class="calc-title">📊 Calculation Breakdown</div>
+                <div id="calcDetails"></div>
+            </div>
+            
+            <div class="feedback-section" id="feedbackSection">
+                <div class="feedback-title">💡 Personalized Feedback & Tips</div>
+                <div id="feedbackContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('healthForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const age = parseFloat(document.getElementById('age').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const heartRate = parseFloat(document.getElementById('heartRate').value);
+            const bloodPressure = parseFloat(document.getElementById('bloodPressure').value);
+            const sleep = parseFloat(document.getElementById('sleep').value);
+            const exercise = parseFloat(document.getElementById('exercise').value);
+            const smoking = parseFloat(document.getElementById('smoking').value);
+            
+            // Calculate BMI
+            const heightM = height / 100;
+            const bmi = weight / (heightM * heightM);
+            
+            // BMI Score (0-10)
+            let bmiScore;
+            if (bmi < 16) bmiScore = 2;
+            else if (bmi < 18.5) bmiScore = 5;
+            else if (bmi < 25) bmiScore = 10;
+            else if (bmi < 30) bmiScore = 7;
+            else if (bmi < 35) bmiScore = 4;
+            else bmiScore = 2;
+            
+            // Heart Rate Score (0-10)
+            let hrScore;
+            if (heartRate < 60) hrScore = 10;
+            else if (heartRate < 70) hrScore = 9;
+            else if (heartRate < 80) hrScore = 7;
+            else if (heartRate < 90) hrScore = 5;
+            else hrScore = 3;
+            
+            // Sleep Score (0-10)
+            let sleepScore;
+            if (sleep >= 7 && sleep <= 9) sleepScore = 10;
+            else if (sleep >= 6 && sleep < 7) sleepScore = 7;
+            else if (sleep >= 5 && sleep < 6) sleepScore = 5;
+            else sleepScore = 3;
+            
+            // Exercise Score (0-10)
+            let exerciseScore = Math.min(10, (exercise / 5) * 10);
+            
+            // Age adjustment (slight penalty for older age)
+            let ageMultiplier = 1.0;
+            if (age > 60) ageMultiplier = 0.95;
+            else if (age > 70) ageMultiplier = 0.90;
+            
+            // Calculate weighted total score
+            const totalScore = (
+                bmiScore * 0.20 +
+                hrScore * 0.15 +
+                bloodPressure * 0.20 +
+                sleepScore * 0.15 +
+                exerciseScore * 0.15 +
+                smoking * 0.15
+            ) * ageMultiplier;
+            
+            // Ensure score is between 1 and 10
+            const finalScore = Math.max(1, Math.min(10, Math.round(totalScore * 10) / 10));
+            
+            // Display result
+            const resultDiv = document.getElementById('result');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const healthStatus = document.getElementById('healthStatus');
+            const bmiInfo = document.getElementById('bmiInfo');
+            const scaleMarker = document.getElementById('scaleMarker');
+            
+            scoreDisplay.textContent = finalScore.toFixed(1);
+            
+            // Position the marker on the scale (1-10 scale)
+            const markerPosition = ((finalScore - 1) / 9) * 100;
+            scaleMarker.style.left = `calc(${markerPosition}% - 2px)`;
+            
+            let status, statusClass, bmiCategory;
+            if (finalScore >= 8.5) {
+                status = "Excellent Health!";
+                statusClass = "status-excellent";
+            } else if (finalScore >= 7) {
+                status = "Good Health";
+                statusClass = "status-good";
+            } else if (finalScore >= 5) {
+                status = "Fair Health";
+                statusClass = "status-fair";
+            } else {
+                status = "Needs Improvement";
+                statusClass = "status-poor";
+            }
+            
+            if (bmi < 18.5) bmiCategory = "Underweight";
+            else if (bmi < 25) bmiCategory = "Normal";
+            else if (bmi < 30) bmiCategory = "Overweight";
+            else bmiCategory = "Obese";
+            
+            healthStatus.textContent = status;
+            healthStatus.className = `health-status ${statusClass}`;
+            bmiInfo.innerHTML = `BMI: <strong>${bmi.toFixed(1)}</strong> (${bmiCategory})`;
+            
+            // Show detailed calculations
+            const calcDetails = document.getElementById('calcDetails');
+            calcDetails.innerHTML = `
+                <div class="calc-section">
+                    <div class="calc-header">🧮 BMI Calculation</div>
+                    <div class="calc-detail">Height: ${height} cm = ${heightM.toFixed(2)} m</div>
+                    <div class="calc-detail">Weight: ${weight} kg</div>
+                    <div class="calc-formula">BMI = Weight ÷ (Height)² = ${weight} ÷ (${heightM.toFixed(2)})² = ${bmi.toFixed(2)}</div>
+                    <div class="calc-detail">BMI Score: <span class="calc-result">${bmiScore}/10</span></div>
+                </div>
+                
+                <div class="calc-section">
+                    <div class="calc-header">❤️ Heart Rate Score</div>
+                    <div class="calc-detail">Resting Heart Rate: ${heartRate} bpm</div>
+                    <div class="calc-detail">Score: <span class="calc-result">${hrScore}/10</span></div>
+                    <div class="calc-detail" style="font-size: 12px; color: #888;">Lower resting heart rate = Better cardiovascular fitness</div>
+                </div>
+                
+                <div class="calc-section">
+                    <div class="calc-header">🩺 Blood Pressure Score</div>
+                    <div class="calc-detail">Score: <span class="calc-result">${bloodPressure}/10</span></div>
+                </div>
+                
+                <div class="calc-section">
+                    <div class="calc-header">😴 Sleep Score</div>
+                    <div class="calc-detail">Sleep Duration: ${sleep} hours/night</div>
+                    <div class="calc-detail">Score: <span class="calc-result">${sleepScore}/10</span></div>
+                    <div class="calc-detail" style="font-size: 12px; color: #888;">Optimal: 7-9 hours</div>
+                </div>
+                
+                <div class="calc-section">
+                    <div class="calc-header">🏃 Exercise Score</div>
+                    <div class="calc-detail">Exercise Days: ${exercise} days/week</div>
+                    <div class="calc-detail">Score: <span class="calc-result">${exerciseScore.toFixed(1)}/10</span></div>
+                    <div class="calc-detail" style="font-size: 12px; color: #888;">Target: 5+ days/week</div>
+                </div>
+                
+                <div class="calc-section">
+                    <div class="calc-header">🚭 Smoking Status Score</div>
+                    <div class="calc-detail">Score: <span class="calc-result">${smoking}/10</span></div>
+                </div>
+                
+                <div class="calc-section" style="background: #e8eaf6; border-left-color: #5e35b1;">
+                    <div class="calc-header">📈 Final Health Score Calculation</div>
+                    <div class="calc-formula">
+                        Score = (BMI×0.20 + Heart Rate×0.15 + Blood Pressure×0.20 + Sleep×0.15 + Exercise×0.15 + Smoking×0.15) × Age Factor
+                    </div>
+                    <div class="calc-formula">
+                        Score = (${bmiScore}×0.20 + ${hrScore}×0.15 + ${bloodPressure}×0.20 + ${sleepScore}×0.15 + ${exerciseScore.toFixed(1)}×0.15 + ${smoking}×0.15) × ${ageMultiplier}
+                    </div>
+                    <div class="calc-formula">
+                        Score = ${totalScore.toFixed(2)} ≈ <span class="calc-result">${finalScore.toFixed(1)}/10</span>
+                    </div>
+                    <div class="calc-detail" style="margin-top: 10px;">
+                        <strong>Weight Distribution:</strong><br>
+                        • BMI: 20% | Blood Pressure: 20%<br>
+                        • Heart Rate: 15% | Sleep: 15%<br>
+                        • Exercise: 15% | Smoking: 15%
+                    </div>
+                </div>
+            `;
+            
+            // Generate personalized feedback and tips
+            const feedbackContent = document.getElementById('feedbackContent');
+            let feedbackText = '';
+            let tips = [];
+            
+            if (finalScore >= 8.5) {
+                feedbackText = `<div class="feedback-content">🌟 <strong>Outstanding!</strong> Your health score is excellent. You're doing a fantastic job maintaining your wellness. Keep up these healthy habits and continue with regular check-ups to stay on track.</div>`;
+                
+                if (exercise < 5) tips.push({icon: '🏃', category: 'Exercise', text: 'Consider increasing to 5+ days per week for optimal cardiovascular health.'});
+                if (sleep < 7 || sleep > 9) tips.push({icon: '😴', category: 'Sleep', text: 'Aim for 7-9 hours of sleep for peak recovery and mental clarity.'});
+                if (bmi < 18.5 || bmi >= 25) tips.push({icon: '⚖️', category: 'Weight', text: 'Work towards a BMI in the normal range (18.5-24.9) through balanced nutrition.'});
+                
+                if (tips.length === 0) {
+                    tips.push({icon: '✨', category: 'Maintenance', text: 'Keep up your excellent routine with regular health screenings.'});
+                    tips.push({icon: '🧘', category: 'Mental Health', text: 'Don\'t forget mental wellness - practice stress management and mindfulness.'});
+                    tips.push({icon: '🥗', category: 'Nutrition', text: 'Maintain a diverse, colorful diet rich in whole foods.'});
+                }
+            } else if (finalScore >= 7) {
+                feedbackText = `<div class="feedback-content">👍 <strong>Good work!</strong> Your health is in good shape, but there's room for improvement. Focus on the areas below to reach excellent health.</div>`;
+                
+                if (bmiScore < 8) tips.push({icon: '⚖️', category: 'BMI', text: `Your BMI is ${bmi.toFixed(1)}. ${bmi < 18.5 ? 'Increase calorie intake with nutrient-dense foods.' : bmi >= 30 ? 'Consider a structured weight loss plan with professional guidance.' : 'Work towards a healthy weight through balanced diet and exercise.'}`});
+                if (hrScore < 8) tips.push({icon: '❤️', category: 'Heart Rate', text: 'Improve cardiovascular fitness with regular aerobic exercise like running, swimming, or cycling.'});
+                if (bloodPressure < 8) tips.push({icon: '🩺', category: 'Blood Pressure', text: 'Reduce sodium intake, manage stress, and consult your doctor for monitoring.'});
+                if (sleepScore < 8) tips.push({icon: '😴', category: 'Sleep', text: `At ${sleep} hours, adjust your sleep schedule. Aim for 7-9 hours with consistent bedtime/wake times.`});
+                if (exerciseScore < 8) tips.push({icon: '🏃', category: 'Exercise', text: `Increase from ${exercise} to 5+ days per week. Start with 30-minute sessions of moderate activity.`});
+                if (smoking < 10) tips.push({icon: '🚭', category: 'Smoking', text: 'Quitting smoking is one of the best things you can do for your health. Seek support programs or nicotine replacement therapy.'});
+                
+            } else if (finalScore >= 5) {
+                feedbackText = `<div class="feedback-content">⚠️ <strong>Needs attention.</strong> Your health score indicates several areas that need improvement. Don't be discouraged - small consistent changes can make a big difference!</div>`;
+                
+                if (bmiScore < 7) tips.push({icon: '⚖️', category: 'BMI Priority', text: `BMI ${bmi.toFixed(1)} needs attention. ${bmi < 18.5 ? 'Consult a nutritionist to develop a healthy weight gain plan.' : 'Start with a modest calorie deficit (300-500 cal/day) and focus on whole foods.'}`});
+                if (hrScore < 7) tips.push({icon: '❤️', category: 'Heart Health', text: 'Start with light cardio like brisk walking for 20-30 minutes, 3-4 times per week.'});
+                if (bloodPressure < 7) tips.push({icon: '🩺', category: 'Blood Pressure', text: 'This is critical - consult your doctor immediately. Reduce salt, increase potassium-rich foods, and manage stress.'});
+                if (sleepScore < 7) tips.push({icon: '😴', category: 'Sleep Hygiene', text: 'Create a bedtime routine: no screens 1 hour before bed, cool dark room, and consistent schedule.'});
+                if (exerciseScore < 7) tips.push({icon: '🏃', category: 'Start Moving', text: 'Begin with just 15 minutes daily - walking, stretching, or light activities. Gradually increase duration and intensity.'});
+                if (smoking < 7) tips.push({icon: '🚭', category: 'Smoking Cessation', text: 'Make quitting your #1 priority. Talk to your doctor about cessation programs and medications that can help.'});
+                
+                tips.push({icon: '👨‍⚕️', category: 'Professional Help', text: 'Consider scheduling a comprehensive health check-up and discuss your goals with a healthcare provider.'});
+                
+            } else {
+                feedbackText = `<div class="feedback-content">🚨 <strong>Immediate action needed.</strong> Your health score is concerning and requires immediate attention. Please consult with healthcare professionals to develop a comprehensive improvement plan.</div>`;
+                
+                if (bmiScore <= 4) tips.push({icon: '⚖️', category: 'BMI Critical', text: `BMI ${bmi.toFixed(1)} requires medical attention. See a doctor and nutritionist for a supervised health plan.`});
+                if (hrScore <= 4) tips.push({icon: '❤️', category: 'Heart Health', text: 'Elevated resting heart rate needs evaluation. Consult a cardiologist and start gentle, supervised exercise.'});
+                if (bloodPressure <= 4) tips.push({icon: '🩺', category: 'Blood Pressure', text: '⚠️ HIGH PRIORITY: See your doctor immediately. This requires medical management and lifestyle changes.'});
+                if (sleepScore <= 4) tips.push({icon: '😴', category: 'Sleep Deficit', text: 'Severe sleep deprivation affects all health areas. Discuss with your doctor - you may have a sleep disorder.'});
+                if (exerciseScore <= 4) tips.push({icon: '🏃', category: 'Physical Activity', text: 'Start with 10 minutes of daily gentle movement. Even light activity is better than none.'});
+                if (smoking <= 4) tips.push({icon: '🚭', category: 'Smoking', text: '⚠️ CRITICAL: Smoking is severely impacting your health. Seek immediate help from smoking cessation programs.'});
+                
+                tips.push({icon: '👨‍⚕️', category: 'Medical Consultation', text: 'Schedule an appointment with your doctor ASAP for a full health assessment and personalized treatment plan.'});
+                tips.push({icon: '💪', category: 'Take Action', text: 'Don\'t feel overwhelmed. Focus on one change at a time. Every small step counts towards better health.'});
+            }
+            
+            // Build tips HTML
+            let tipsHTML = '<div class="tips-list">';
+            tips.forEach(tip => {
+                tipsHTML += `
+                    <div class="tip-item">
+                        <span class="tip-icon">${tip.icon}</span>
+                        <div class="tip-text">
+                            <span class="tip-category">${tip.category}:</span>${tip.text}
+                        </div>
+                    </div>
+                `;
+            });
+            tipsHTML += '</div>';
+            
+            feedbackContent.innerHTML = feedbackText + tipsHTML;
+            
+            resultDiv.style.display = 'block';
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    </script>
+</body>
+</html>
