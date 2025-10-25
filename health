@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Health Score Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -112,6 +113,19 @@
 
         button:active {
             transform: translateY(0);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .download-btn:hover {
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
         }
 
         .result {
@@ -440,10 +454,22 @@
                 <div class="feedback-title">💡 Personalized Feedback & Tips</div>
                 <div id="feedbackContent"></div>
             </div>
+            
+            <button class="download-btn" id="downloadBtn" onclick="downloadPDF()">
+                <span>📄</span>
+                <span>Download Health Report (PDF)</span>
+            </button>
         </div>
+        
+        <button class="download-btn" id="downloadBtn2" onclick="downloadPDF()" style="display: none; margin-top: 15px;">
+            <span>📥</span>
+            <span>Download Complete Report as PDF</span>
+        </button>
     </div>
 
     <script>
+        let currentHealthData = null;
+
         document.getElementById('healthForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -673,9 +699,173 @@
             
             feedbackContent.innerHTML = feedbackText + tipsHTML;
             
+            // Store data for PDF generation
+            currentHealthData = {
+                age, weight, height, heartRate, bloodPressure, sleep, exercise, smoking,
+                bmi, bmiScore, hrScore, sleepScore, exerciseScore, totalScore, finalScore,
+                status, bmiCategory, heightM, ageMultiplier, feedbackText, tips
+            };
+            
             resultDiv.style.display = 'block';
             resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Show the second download button at the bottom
+            document.getElementById('downloadBtn2').style.display = 'flex';
         });
+
+        function downloadPDF() {
+            if (!currentHealthData) return;
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const data = currentHealthData;
+            let yPos = 20;
+            const pageWidth = 210;
+            const margin = 20;
+            const contentWidth = pageWidth - 2 * margin;
+            
+            // Title
+            doc.setFillColor(102, 126, 234);
+            doc.rect(0, 0, pageWidth, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont(undefined, 'bold');
+            doc.text('Health Score Report', pageWidth / 2, 20, { align: 'center' });
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, 28, { align: 'center' });
+            
+            yPos = 45;
+            
+            // Health Score Box
+            doc.setFillColor(245, 247, 250);
+            doc.roundedRect(margin, yPos, contentWidth, 35, 3, 3, 'F');
+            doc.setTextColor(102, 126, 234);
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.text('Your Health Score', pageWidth / 2, yPos + 10, { align: 'center' });
+            doc.setFontSize(36);
+            doc.text(`${data.finalScore.toFixed(1)}/10`, pageWidth / 2, yPos + 25, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text(data.status, pageWidth / 2, yPos + 32, { align: 'center' });
+            
+            yPos += 45;
+            
+            // BMI Information
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('BMI Calculation', margin, yPos);
+            yPos += 7;
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Height: ${data.height} cm (${data.heightM.toFixed(2)} m)`, margin, yPos);
+            yPos += 5;
+            doc.text(`Weight: ${data.weight} kg`, margin, yPos);
+            yPos += 5;
+            doc.text(`BMI = ${data.weight} ÷ (${data.heightM.toFixed(2)})² = ${data.bmi.toFixed(2)} (${data.bmiCategory})`, margin, yPos);
+            yPos += 5;
+            doc.setFont(undefined, 'bold');
+            doc.text(`BMI Score: ${data.bmiScore}/10`, margin, yPos);
+            
+            yPos += 12;
+            
+            // Component Scores
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('Component Scores', margin, yPos);
+            yPos += 7;
+            
+            doc.setFillColor(248, 249, 250);
+            doc.roundedRect(margin, yPos, contentWidth, 40, 2, 2, 'F');
+            
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            const leftCol = margin + 5;
+            const rightCol = pageWidth / 2 + 5;
+            
+            doc.text(`❤️ Heart Rate: ${data.hrScore}/10`, leftCol, yPos + 7);
+            doc.text(`🩺 Blood Pressure: ${data.bloodPressure}/10`, rightCol, yPos + 7);
+            doc.text(`😴 Sleep: ${data.sleepScore}/10`, leftCol, yPos + 14);
+            doc.text(`🏃 Exercise: ${data.exerciseScore.toFixed(1)}/10`, rightCol, yPos + 14);
+            doc.text(`🚭 Smoking Status: ${data.smoking}/10`, leftCol, yPos + 21);
+            doc.text(`⚖️ BMI: ${data.bmiScore}/10`, rightCol, yPos + 21);
+            
+            yPos += 47;
+            
+            // Final Calculation
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('Final Score Calculation', margin, yPos);
+            yPos += 7;
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Score = (BMI×0.20 + HR×0.15 + BP×0.20 + Sleep×0.15 + Exercise×0.15 + Smoking×0.15) × Age Factor`, margin, yPos);
+            yPos += 5;
+            doc.text(`Score = (${data.bmiScore}×0.20 + ${data.hrScore}×0.15 + ${data.bloodPressure}×0.20 + ${data.sleepScore}×0.15 + ${data.exerciseScore.toFixed(1)}×0.15 + ${data.smoking}×0.15) × ${data.ageMultiplier}`, margin, yPos);
+            yPos += 5;
+            doc.setFont(undefined, 'bold');
+            doc.text(`Final Score = ${data.totalScore.toFixed(2)} ≈ ${data.finalScore.toFixed(1)}/10`, margin, yPos);
+            
+            yPos += 12;
+            
+            // New page for feedback if needed
+            if (yPos > 240) {
+                doc.addPage();
+                yPos = 20;
+            }
+            
+            // Feedback Section
+            doc.setFillColor(102, 126, 234, 0.1);
+            doc.roundedRect(margin, yPos, contentWidth, 15, 2, 2, 'F');
+            doc.setTextColor(102, 126, 234);
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('Personalized Feedback', margin + 5, yPos + 10);
+            
+            yPos += 20;
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            // Extract feedback text without HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = data.feedbackText;
+            const feedbackPlainText = tempDiv.textContent || tempDiv.innerText;
+            const feedbackLines = doc.splitTextToSize(feedbackPlainText, contentWidth - 10);
+            doc.text(feedbackLines, margin + 5, yPos);
+            yPos += feedbackLines.length * 5 + 10;
+            
+            // Tips
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Improvement Tips:', margin, yPos);
+            yPos += 7;
+            
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'normal');
+            
+            data.tips.forEach((tip, index) => {
+                if (yPos > 270) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                const tipText = `${tip.icon} ${tip.category}: ${tip.text}`;
+                const lines = doc.splitTextToSize(tipText, contentWidth - 10);
+                doc.text(lines, margin + 5, yPos);
+                yPos += lines.length * 4 + 3;
+            });
+            
+            // Footer
+            doc.setFontSize(8);
+            doc.setTextColor(128, 128, 128);
+            doc.text('This report is for informational purposes only. Consult healthcare professionals for medical advice.', pageWidth / 2, 285, { align: 'center' });
+            
+            // Save PDF
+            doc.save(`Health_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
     </script>
 </body>
 </html>
